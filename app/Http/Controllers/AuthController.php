@@ -31,6 +31,7 @@ class AuthController extends Controller
     {
         $guard = session('guard');
         Auth::guard($guard)->logout();
+        // Delete all Session
         $request->session()->invalidate();
         return redirect()->route('login', 'user');
     }

@@ -41,5 +41,8 @@ Route::middleware(['auth:user','verified'])->group(function () {
     })->name('dashboard');
     Route::resource('notes', NoteController::class);
     Route::get('logout', [AuthController::class, 'logout'])->name('logout');
-});
 
+    Route::get('/trashed', [NoteController::class, 'trashed'])->name('trashed');
+    Route::post('/notes/{id}/restore', [NoteController::class, 'restore'])->name('restore');
+    Route::delete('/notes/{id}/forceDelete', [NoteController::class, 'forceDelete'])->name('force-delete');
+});

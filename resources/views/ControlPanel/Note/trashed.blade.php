@@ -32,11 +32,14 @@
                                     <td>{{$note->description}}</td>
                                     <td>
                                         <div class="btn-group">
+                                                <a href="#" onclick="confirmRestore('{{$note->id}}', this)" class="btn btn-primary">
+                                                    <i class="fas fa-undo"></i>
+                                                  </a>
 
-                                            <a href="{{route('notes.edit', $note->id)}}" class="btn btn-warning btn-flat">
-                                                <i class="fas fa-edit"></i></a>
-                                            <a href="#" onclick="confirmDelete('{{$note->id}}', this)" class="btn btn-danger">
-                                                <i class="fas fa-trash"></i></a>
+
+                                                <a href="#" onclick="confirmForceDelete('{{$note->id}}')" class="btn btn-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                  </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -58,45 +61,59 @@
 @section('scripts')
 
 <script>
-    function confirmDelete(id, reference) {
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "To Add This item to trashed!",
-            icon: 'warning',
-            showCancelButton: true,
-            cancelButtonColor: '#d33',
-            confirmButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, insert it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                performDelete(id, reference);
+function confirmRestore(id, reference) {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "To restore this note!",
+    icon: 'warning',
+    showCancelButton: true,
+    cancelButtonColor: '#d33',
+    confirmButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, restore it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      performRestore(id, reference);
+    }
+  });
+}
+function performRestore(id, reference) {
+  axios.post(`/notes/${id}/restore`)
+    .then(response => {
+      console.log('Note restored:', response.data);
+      window.location.href = '/notes';
 
-            }
-        });
-    }
-    function performDelete(id, reference) {
-        axios.delete('/notes/' + id)
-            .then(function(response) {
-                console.log(response);
-                reference.closest('tr').remove();
-                showMessage({
-                title: 'Add To Trashed!',
-                text: 'The item has been successfully Trashed.',
-                icon: 'success'
-            });
-            })
-            .catch(function(error) {
-                console.log(error.response);
-                showMessage(error.response.data);
-            });
-    }
+    })
+    .catch(error => {
+      console.error('Error restoring note:', error);
+    });
+}
 
-    function showMessage(data) {
-        Swal.fire(
-            data.title,
-            data.text,
-            data.icon
-        );
-    }
+  function confirmForceDelete(noteId) {
+    Swal.fire({
+      title: 'Are you sure To Delete it?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      cancelButtonColor: '#d33',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        performForceDelete(noteId);
+      }
+    });
+  }
+
+  function performForceDelete(noteId) {
+    axios.delete(`/notes/${noteId}/forceDelete`)
+      .then(response => {
+        console.log('Note deleted Successfully:', response.data);
+        window.location.href = '/notes';
+      })
+      .catch(error => {
+        console.error('Error performing forcedelete:', error);
+      });
+  }
+
 </script>
 @endsection

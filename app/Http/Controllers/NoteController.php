@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Note;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class NoteController extends Controller
@@ -98,6 +99,7 @@ class NoteController extends Controller
      */
     public function update(Request $request, Note $note)
     {
+        //  dd( Auth::user()->name);
         $validator = Validator($request->all(), [
             'title' => 'required|string|min:3',
             'description' => 'string',
@@ -133,7 +135,29 @@ class NoteController extends Controller
             ['message' => $deleted ? 'Deleted successfully' : 'Delete failed!'],
             $deleted ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST
         );
+}
 
+public function trashed()
+{
+    $notes = Note::onlyTrashed()->get();
+    return response()->view('ControlPanel.Note.trashed', [
+        'notes' => $notes,
+    ]);
 
+}
+
+public function restore($id)
+{
+    $note = Note::withTrashed()->findOrFail($id);
+    $note->restore();
+    return response()->json(['message' => 'Note restored successfully']);
+
+}
+
+public function forceDelete($id)
+{
+    $note = Note::withTrashed()->findOrFail($id);
+    $note->forceDelete();
+    return response()->json(['message' => 'Note deleted Successfully']);
 }
 }
